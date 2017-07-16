@@ -17,6 +17,7 @@ class BinaryTree:
     def __init__(self, node):
         self.root_node = node
         self.current_node = self.root_node
+        self.serial = []
 
     def traverse(self):
         q1 = input('%s?(y/n): ' % str(self.current_node))
@@ -32,8 +33,7 @@ class BinaryTree:
                     self.traverse()
                 else:
                     print('Bye.')
-                    # TODO
-                    # Serialize
+                    self.save()
             else:
                 if self.current_node.right_child is None:
                     self.temp = input('What is it?: ')
@@ -53,8 +53,7 @@ class BinaryTree:
                         self.traverse()
                     else:
                         print('Bye.')
-                        # TODO
-                        # Serialize
+                        self.save()
                     self.current_node = self.root_node
                     self.traverse()
                 else:
@@ -79,17 +78,50 @@ class BinaryTree:
                     self.traverse()
                 else:
                     print('Bye.')
-                    # TODO
-                    # Serialize
+                    self.save()
             else:
                 self.current_node = self.current_node.right_child
                 self.traverse()
 
+    def save(self, level=0, current=None):
+        if current is None:
+            current = self.root_node
+
+        if level < 2:
+            self.serial.extend([str(current), str(current.left_child)])
+        else:
+            # filler = ['-1'] * ((2 ** level) - 2)
+            # self.serial.extend(filler)
+            self.serial.extend([str(current), str(current.left_child)])
+
+        if current.right_child:
+            self.save(level+1, current.right_child)
+        else:
+            serial = ','.join(self.serial)
+            with open('data.csv', 'w') as fout:
+                fout.write(serial)
+
+    def bootstrap(self):
+        with open('data.csv', 'r') as fin:
+            serial = fin.read().split(',')
+            for i in range(len(serial)):
+                node = Node(serial[i])
+                if serial[i] != '-1':
+                    if i == 0:
+                        self.root_node = node
+                        self.current_node = self.root_node
+                    else:
+                        if self.current_node.left_child is None:
+                            self.current_node.left_child = node
+                        elif self.current_node.right_child is None:
+                            self.current_node.right_child = node
+                            self.current_node = self.current_node.right_child
+        self.current_node = self.root_node
+
 
 def main():
-    root_node = Node('Does it have legs')
-    root_node.left_child = Node('dog')
-    binary_tree = BinaryTree(root_node)
+    binary_tree = BinaryTree(None)
+    binary_tree.bootstrap()
     binary_tree.traverse()
 
 
